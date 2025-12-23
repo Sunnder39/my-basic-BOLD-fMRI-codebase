@@ -1,0 +1,273 @@
+% This batch script analyses the tactile working memory fMRI dataset
+% This is for the ORDER/REPEAT/NONRES condition.
+spm('Defaults','fMRI');
+spm_jobman('initcfg');
+%spm_get_defaults('cmdline',1);
+data_path='G:\WM\delay_1st\';
+datapath2='G:\WM\DCM\order\';
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% DYNAMIC CAUSAL MODELLING
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+clear DCM
+
+% SPECIFICATION DCMs "attentional modulation of backward/forward connection"
+%--------------------------------------------------------------------------
+% To specify a DCM, you might want to create a template one using the GUI
+% then use spm_dcm_U.m and spm_dcm_voi.m to insert new inputs and new
+% regions. The following code creates a DCM file from scratch, which
+% involves some technical subtleties and a deeper knowledge of the DCM
+% structure.
+for x=1:28
+load(fullfile(data_path,sprintf('sub%02d/SPM.mat',x)));
+
+% Load regions of interest for the ORDER/REPEAT/NONRES condition.
+
+load(fullfile(data_path,sprintf('sub%02d',x),'VOI_ors1_1.mat'),'xY');
+DCM.xY(1) = xY;
+load(fullfile(data_path,sprintf('sub%02d',x),'VOI_orpc1_1.mat'),'xY');
+DCM.xY(2) = xY;
+load(fullfile(data_path,sprintf('sub%02d',x),'VOI_ordl1_1.mat'),'xY');
+DCM.xY(3) = xY;
+
+DCM.n = length(DCM.xY);      % number of regions
+DCM.v = length(DCM.xY(1).u); % number of time points
+
+% Time series
+
+DCM.Y.dt  = SPM.xY.RT;
+DCM.Y.X0  = DCM.xY(1).X0;
+for i = 1:DCM.n
+    DCM.Y.y(:,i)  = DCM.xY(i).u;
+    DCM.Y.name{i} = DCM.xY(i).name;
+end
+
+DCM.Y.Q    = spm_Ce(ones(1,DCM.n)*DCM.v);
+
+% Experimental inputs
+
+DCM.U.dt   =  SPM.Sess(1).U(1).dt;
+DCM.U.name = [SPM.Sess(1).U.name];
+DCM.U.u    = [SPM.Sess(1).U(1).u(33:end,1)];
+DCM.U.idx = [1,1];
+% DCM parameters and options
+
+DCM.delays = repmat(SPM.xY.RT/2,DCM.n,1);
+DCM.TE     = 0.04;
+
+DCM.options.nonlinear  = 0;
+DCM.options.two_state  = 0;
+DCM.options.stochastic = 0;
+DCM.options.nograph    = 1;
+
+% Connectivity matrices for models
+
+DCM.a = [1 1 1; 1 1 1; 1 1 1];
+DCM.b = zeros(3,3,1); 
+DCM.c = [1;0;0];  % input
+DCM.d = zeros(3,3,0);
+
+DCM.b(:,:,1)=[0 1 0;0 0 0;0 0 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_001.mat'),'DCM');
+DCM.b(:,:,1)=[0 1 1;0 0 0;0 0 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_002.mat'),'DCM');
+DCM.b(:,:,1)=[0 1 1;0 0 0;0 1 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_003.mat'),'DCM');
+DCM.b(:,:,1)=[0 1 1;0 0 0;1 0 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_004.mat'),'DCM');
+DCM.b(:,:,1)=[0 1 1;0 0 0;1 1 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_005.mat'),'DCM');
+DCM.b(:,:,1)=[0 1 1;0 0 1;0 0 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_006.mat'),'DCM');
+DCM.b(:,:,1)=[0 1 1;0 0 1;0 1 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_007.mat'),'DCM');
+DCM.b(:,:,1)=[0 1 1;0 0 1;1 0 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_008.mat'),'DCM');
+DCM.b(:,:,1)=[0 1 1;0 0 1;1 1 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_009.mat'),'DCM');
+DCM.b(:,:,1)=[0 1 1;1 0 0;0 0 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_010.mat'),'DCM');
+DCM.b(:,:,1)=[0 1 1;1 0 0;0 1 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_011.mat'),'DCM');
+DCM.b(:,:,1)=[0 1 1;1 0 0;1 0 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_012.mat'),'DCM');
+DCM.b(:,:,1)=[0 1 1;1 0 0;1 1 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_013.mat'),'DCM');
+DCM.b(:,:,1)=[0 1 1;1 0 1;0 0 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_014.mat'),'DCM');
+DCM.b(:,:,1)=[0 1 1;1 0 1;0 1 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_015.mat'),'DCM');
+DCM.b(:,:,1)=[0 1 1;1 0 1;1 0 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_016.mat'),'DCM');
+DCM.b(:,:,1)=[0 1 1;1 0 1;1 1 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_017.mat'),'DCM');
+DCM.b(:,:,1)=[0 1 0;1 0 0;0 0 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_018.mat'),'DCM');
+DCM.b(:,:,1)=[0 1 0;1 0 0;0 1 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_019.mat'),'DCM');
+DCM.b(:,:,1)=[0 1 0;1 0 0;1 0 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_020.mat'),'DCM');
+DCM.b(:,:,1)=[0 1 0;1 0 0;1 1 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_021.mat'),'DCM');
+DCM.b(:,:,1)=[0 1 0;1 0 1;0 0 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_022.mat'),'DCM');
+DCM.b(:,:,1)=[0 1 0;1 0 1;0 1 0];
+
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_023.mat'),'DCM');
+DCM.b(:,:,1)=[0 1 0;1 0 1;1 0 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_024.mat'),'DCM');
+DCM.b(:,:,1)=[0 1 0;1 0 1;1 1 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_025.mat'),'DCM');
+DCM.b(:,:,1)=[0 1 0;0 0 1;0 0 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_026.mat'),'DCM');
+DCM.b(:,:,1)=[0 1 0;0 0 1;0 1 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_027.mat'),'DCM');
+DCM.b(:,:,1)=[0 1 0;0 0 1;1 0 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_028.mat'),'DCM');
+DCM.b(:,:,1)=[0 1 0;0 0 1;1 1 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_029.mat'),'DCM');
+DCM.b(:,:,1)=[0 1 0;0 0 0;1 0 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_030.mat'),'DCM');
+DCM.b(:,:,1)=[0 1 0;0 0 0;1 1 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_031.mat'),'DCM');
+DCM.b(:,:,1)=[0 1 0;0 0 0;0 1 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_032.mat'),'DCM');
+DCM.b(:,:,1)=[0 0 1;0 0 0;0 0 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_033.mat'),'DCM');
+DCM.b(:,:,1)=[0 0 1;1 0 0;0 0 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_034.mat'),'DCM');
+DCM.b(:,:,1)=[0 0 1;1 0 1;0 0 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_035.mat'),'DCM');
+DCM.b(:,:,1)=[0 0 1;1 0 1;1 0 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_036.mat'),'DCM');
+DCM.b(:,:,1)=[0 0 1;1 0 1;1 1 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_037.mat'),'DCM');
+DCM.b(:,:,1)=[0 0 1;1 0 1;0 1 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_038.mat'),'DCM');
+DCM.b(:,:,1)=[0 0 1;1 0 0;1 0 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_039.mat'),'DCM');
+DCM.b(:,:,1)=[0 0 1;1 0 0;1 1 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_040.mat'),'DCM');
+DCM.b(:,:,1)=[0 0 1;1 0 0;0 1 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_041.mat'),'DCM');
+DCM.b(:,:,1)=[0 0 1;0 0 1;0 0 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_042.mat'),'DCM');
+DCM.b(:,:,1)=[0 0 1;0 0 1;0 1 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_043.mat'),'DCM');
+DCM.b(:,:,1)=[0 0 1;0 0 1;1 0 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_044.mat'),'DCM');
+DCM.b(:,:,1)=[0 0 1;0 0 1;1 1 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_045.mat'),'DCM');
+DCM.b(:,:,1)=[0 0 1;0 0 0;1 0 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_046.mat'),'DCM');
+DCM.b(:,:,1)=[0 0 1;0 0 0;1 1 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_047.mat'),'DCM');
+DCM.b(:,:,1)=[0 0 1;0 0 0;0 1 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_048.mat'),'DCM');
+DCM.b(:,:,1)=[0 0 0;1 0 0;0 0 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_049.mat'),'DCM');
+DCM.b(:,:,1)=[0 0 0;1 0 1;0 0 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_050.mat'),'DCM');
+DCM.b(:,:,1)=[0 0 0;1 0 1;1 0 0];
+
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_051.mat'),'DCM');
+DCM.b(:,:,1)=[0 0 0;1 0 1;1 1 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_052.mat'),'DCM');
+DCM.b(:,:,1)=[0 0 0;1 0 1;0 1 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_053.mat'),'DCM');
+DCM.b(:,:,1)=[0 0 0;1 0 0;1 0 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_054.mat'),'DCM');
+DCM.b(:,:,1)=[0 0 0;1 0 0;1 1 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_055.mat'),'DCM');
+DCM.b(:,:,1)=[0 0 0;1 0 0;0 0 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_056.mat'),'DCM');
+DCM.b(:,:,1)=[0 0 0;1 0 1;0 0 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_057.mat'),'DCM');
+DCM.b(:,:,1)=[0 0 0;1 0 1;1 0 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_058.mat'),'DCM');
+DCM.b(:,:,1)=[0 0 0;1 0 1;1 1 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_059.mat'),'DCM');
+DCM.b(:,:,1)=[0 0 0;1 0 1;0 1 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_060.mat'),'DCM');
+DCM.b(:,:,1)=[0 0 0;1 0 0;1 0 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_061.mat'),'DCM');
+DCM.b(:,:,1)=[0 0 0;1 0 0;1 1 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_062.mat'),'DCM');
+DCM.b(:,:,1)=[0 0 0;0 0 0;0 1 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_063.mat'),'DCM');
+DCM.b(:,:,1)=[0 0 0;0 0 0;0 0 0];
+save(fullfile(datapath2,sprintf('sub%02d',x),'DCM_064.mat'),'DCM');
+
+
+% DCM Estimation
+clear matlabbatch
+
+matlabbatch{1}.spm.dcm.fmri.estimate.dcmmat = {...
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_001.mat');  
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_002.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_003.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_004.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_005.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_006.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_007.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_008.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_009.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_010.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_011.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_012.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_013.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_014.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_015.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_016.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_017.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_018.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_019.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_020.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_021.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_022.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_023.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_024.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_025.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_026.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_027.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_028.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_029.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_030.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_031.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_032.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_033.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_034.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_035.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_036.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_037.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_038.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_039.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_040.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_041.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_042.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_043.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_044.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_045.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_046.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_047.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_048.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_049.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_050.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_051.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_052.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_053.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_054.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_055.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_056.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_057.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_058.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_059.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_060.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_061.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_062.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_063.mat');
+fullfile(datapath2,sprintf('sub%02d',x),'DCM_064.mat');};
+
+spm_jobman('run',matlabbatch);
+
+end
